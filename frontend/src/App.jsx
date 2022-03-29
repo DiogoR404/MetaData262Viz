@@ -1,15 +1,11 @@
 import './App.css';
-import StudentSearch from './components/StudentSearch'
-import StudentAdd from './components/StudentAdd'
+import TestSearch from './components/TestSearch'
 
 function App() {
   const url = 'http://localhost:5000/'
   return (
     <>
-      <StudentSearch url={url}/>
-      <br />
-      <br />
-      <StudentAdd url={url}/>
+      <TestSearch url={url}/>
     </>
   );
 }
