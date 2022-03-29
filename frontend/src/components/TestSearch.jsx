@@ -80,7 +80,7 @@ const TestSearch = ({ url }) => {
         <Button size="large" variant="contained" onClick={getTests}>Search</Button>
       </Box>
 
-      { tests.length !== 0 && <Box>
+      { hasFirstSearch && <Box>
         <ToggleButtonGroup
           exclusive
           value={presentType}

@@ -13,7 +13,7 @@ const SingleSelect = ({ title, list, selected, setSelection , defaultValue=''}) 
         id="select"
         value={selected}
         label="select-label"
-        onChange={(_e, value) => setSelection(value)}
+        onChange={(e) => setSelection(e.target.value)}
         defaultValue={defaultValue}
       >
         {defaultValue === '' && <MenuItem  value=''>None</MenuItem>}
