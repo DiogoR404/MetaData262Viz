@@ -3,6 +3,13 @@ import axios from "axios";
 import MultipleSelect from "./MultipleSelect";
 import SingleSelect from "./SingleSelect";
 import Button from "@mui/material/Button"
+import CssBaseline from '@mui/material/CssBaseline';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+
 
 const TestSearch = ({ url }) => {
   const [version, setVersion] = useState('');
@@ -13,6 +20,7 @@ const TestSearch = ({ url }) => {
   const [listBuiltInsBelong, setListBuiltInsBelong] = useState([]);
   const [listBuiltInsContained, setListBuiltInsContained] = useState([]);
   const [listVersions, setListVersions] = useState([]);
+  const [hasFirstSearch, setHasFirstSearch] = useState(false);
 
   // fetch info for query from database
   useEffect(() => {
@@ -40,54 +48,57 @@ const TestSearch = ({ url }) => {
     axios.post(url + 'test/', query)
       .then((result) => {
         setTests(result.data);
+        setHasFirstSearch(true);
       })
       .catch((e) => console.log(e))
   }
 
   return (
     <>
-    <MultipleSelect
-      title='BuiltIn Belongs'
-      list={listBuiltInsBelong}
-      selection={selectedBuiltInBelong}
-      setSelection={setSelectedBuiltInBelong}
-    />  
-    <MultipleSelect
-      title='BuiltIn Contained'
-      list={listBuiltInsContained}
-      selection={selectedBuiltInContained}
-      setSelection={setSelectedBuiltInContained}
-    />
-    <SingleSelect
-      title='Version'
-      list={listVersions}
-      selection={version}
-      setSelection={setVersion}
-    />
-    <Button variant="contained" onClick={getTests}>Search</Button>
+    <CssBaseline enableColorScheme />
+    <Container align="center">
+      <Typography  variant='h2' component='h1'>Test 262 Database</Typography>
+      <Box bgcolor='grey' >
+        <MultipleSelect
+          title='BuiltIn Belongs'
+          list={listBuiltInsBelong}
+          selection={selectedBuiltInBelong}
+          setSelection={setSelectedBuiltInBelong}
+        />  
+        <MultipleSelect
+          title='BuiltIn Contained'
+          list={listBuiltInsContained}
+          selection={selectedBuiltInContained}
+          setSelection={setSelectedBuiltInContained}
+        />
+        <SingleSelect
+          title='Version'
+          list={listVersions}
+          selection={version}
+          setSelection={setVersion}
+        />
+        <Button size="large" variant="contained" onClick={getTests}>Search</Button>
+      </Box>
 
-    <br />
-    <br />
-    <SingleSelect
-      title='Result'
-      list={['Path', 'JSON']}
-      selection={presentType}
-      setSelection={setPresentType}
-      defaultValue='Path'
-    />
-    <br />
-    <br />
-    Number of tests: {tests.length}
-    <br />
-    Belong: [{selectedBuiltInBelong.join(',')}]
-    <br />
-    contained: [{selectedBuiltInContained.join(',')}]
-    <br />
-    <br />
-    {presentType === 'Path' && 
-      tests.map((item) => <p key={item._id}>{item.path}</p>)
-    } 
-    {presentType === 'JSON' && <pre>{JSON.stringify(tests, null, 4)}</pre> }
+      { tests.length !== 0 && <Box>
+        <ToggleButtonGroup
+          exclusive
+          value={presentType}
+          onChange={(_e, type) => setPresentType(type)}
+          arial-label='Presentation type'
+        >
+          <ToggleButton value='Path' aria-label='Path'>Path</ToggleButton>
+          <ToggleButton value='JSON' aria-label='JSON'>JSON</ToggleButton>
+        </ToggleButtonGroup>
+        <Box textAlign='left'>
+          <Typography variant='h6' component='h3'>Number of tests: {tests.length}</Typography>
+          {presentType === 'Path' && 
+            tests.map((item) => <p key={item._id}>{item.path}</p>)
+          } 
+          {presentType === 'JSON' && <pre>{JSON.stringify(tests, null, 4)}</pre> }
+        </Box>
+      </Box>}
+    </Container>
     </>
   )
 }
