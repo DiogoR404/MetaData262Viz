@@ -16,16 +16,20 @@ const getDistinct = async (key) => {
     .then((res) => { return res; })
 };
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
+app.get('/', async (req, res) => {
+  res.send(await TestMetadata.find({'version': 10})) ;
+});
+app.get('/size', async (req, res) => {
+  res.send(await TestMetadata.find({'version': 5})) ;
 });
 
 // query the database to get the tests
 app.post('/test', async (req, res) => {
+  const n = Date.now();
   const query = {};
-  if (req.body.builtIn !== []) {
+  if (req.body.builtIn.length !== 0) {
     query['built-ins'] = {'$in': req.body.builtIn};
-  }
+  };
   
   if (req.body.version) {
     query.version = Number(req.body.version);
@@ -37,8 +41,10 @@ app.post('/test', async (req, res) => {
     });
   };
   const ret = await TestMetadata.find(query);
+  console.log(Date.now() - n);
   process.stdout.write(JSON.stringify(query, null, 2));
   res.send(ret);
+  console.log(Date.now() - n);
 });
 
 app.get('/getBuiltIns', async (req, res) => {

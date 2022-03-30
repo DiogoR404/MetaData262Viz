@@ -2,7 +2,7 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-const DisplaTests = ({ tests, presentType }) => {
+const DisplayTests = ({ tests, presentType }) => {
   const displayTest = (test, presentType) => {
     if (presentType === 'Path') {
       return test.path;
@@ -30,4 +30,4 @@ const DisplaTests = ({ tests, presentType }) => {
     </>
   );
 }
-export default DisplaTests
+export default DisplayTests

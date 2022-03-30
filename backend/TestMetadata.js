@@ -10,7 +10,6 @@ const testMetadataSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true
     },
     'built-ins': {
         type: String,
@@ -24,6 +23,10 @@ const testMetadataSchema = new mongoose.Schema({
     },
     builtIns: {
         type: Object,
+    },
+    lines: {
+        type: Number,
+        required: true
     }
 })
 

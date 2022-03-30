@@ -40,6 +40,7 @@ const TestSearch = ({ url }) => {
     }, [url]);
 
   const getTests = () => {
+    const n = Date.now();
     setTests([]);
     const query = {
       version: version,
@@ -49,6 +50,7 @@ const TestSearch = ({ url }) => {
 
     axios.post(url + 'test/', query)
       .then((result) => {
+        console.log(Date.now() - n);
         setTests(result.data);
         setHasFirstSearch(true);
       })
@@ -95,7 +97,7 @@ const TestSearch = ({ url }) => {
         </ToggleButtonGroup>
         <Box >
           <Typography variant='h6' component='h3'>Number of tests: {tests.length}</Typography>
-          <DisplayTests tests={tests} presentType={presentType} />
+          <DisplayTests tests={tests.slice(0,10)} presentType={presentType} />
         </Box>
       </Box>}
     </Container>
