@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import MultipleSelect from "./MultipleSelect";
 import SingleSelect from "./SingleSelect";
+import DisplayTests from "./DisplayTests";
+
 import Button from "@mui/material/Button"
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
@@ -77,11 +79,12 @@ const TestSearch = ({ url }) => {
           selection={version}
           setSelection={setVersion}
         />
-        <Button size="large" variant="contained" onClick={getTests}>Search</Button>
+        <Button sx={{m: 2}} size="large" variant="contained" onClick={getTests}>Search</Button>
       </Box>
 
-      { hasFirstSearch && <Box>
+      { hasFirstSearch && <Box textAlign='left' sx={{mt: 2}}>
         <ToggleButtonGroup
+          sx={{ml: 2}}
           exclusive
           value={presentType}
           onChange={(_e, type) => setPresentType(type)}
@@ -90,12 +93,9 @@ const TestSearch = ({ url }) => {
           <ToggleButton value='Path' aria-label='Path'>Path</ToggleButton>
           <ToggleButton value='JSON' aria-label='JSON'>JSON</ToggleButton>
         </ToggleButtonGroup>
-        <Box textAlign='left'>
+        <Box >
           <Typography variant='h6' component='h3'>Number of tests: {tests.length}</Typography>
-          {presentType === 'Path' && 
-            tests.map((item) => <p key={item._id}>{item.path}</p>)
-          } 
-          {presentType === 'JSON' && <pre>{JSON.stringify(tests, null, 4)}</pre> }
+          <DisplayTests tests={tests} presentType={presentType} />
         </Box>
       </Box>}
     </Container>
