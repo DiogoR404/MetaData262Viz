@@ -57,6 +57,23 @@ const TestSearch = ({ url }) => {
       .catch((e) => console.log(e))
   }
 
+  const fil = () => {
+    const t = Date.now();
+    setTests(tests.filter(x => {
+      let ret = false;
+      selectedBuiltInContained.forEach((el) => {
+        if (x['builtIns']) {
+          if (Object.keys(x['builtIns']).includes(el)) {
+            // console.log('passou');
+            ret = true;
+          }
+        }
+      });
+      return ret;
+    }));
+    console.log(Date.now() - t);
+  }
+
   return (
     <>
     <CssBaseline enableColorScheme />
@@ -82,6 +99,7 @@ const TestSearch = ({ url }) => {
           setSelection={setVersion}
         />
         <Button sx={{m: 2}} size="large" variant="contained" onClick={getTests}>Search</Button>
+        <Button sx={{m: 2}} size="large" variant="contained" onClick={fil}>Filter</Button>
       </Box>
 
       { hasFirstSearch && <Box textAlign='left' sx={{mt: 2}}>

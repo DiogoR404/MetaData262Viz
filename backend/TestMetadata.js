@@ -1,32 +1,17 @@
 const mongoose = require('mongoose')
 
 const testMetadataSchema = new mongoose.Schema({
-    path: {
-        type: String,
-        required: true
-    },
-    esid: {
-        type: String,
-    },
-    description: {
-        type: String,
-    },
     'built-ins': {
         type: String,
+        required: false
     },
-    version: {
+    'version': {
         type: Number,
+        required: false
     },
-    esprima: {
-        type: String,
-        required: true
-    },
-    builtIns: {
+    'builtIns': {
         type: Object,
-    },
-    lines: {
-        type: Number,
-        required: true
+        required: false
     }
 })
 

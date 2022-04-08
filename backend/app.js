@@ -17,7 +17,7 @@ const getDistinct = async (key) => {
 };
 
 app.get('/', async (req, res) => {
-  res.send(await TestMetadata.find({'version': 10})) ;
+  res.send(await TestMetadata.find({}));
 });
 app.get('/size', async (req, res) => {
   res.send(await TestMetadata.find({'version': 5})) ;
@@ -40,10 +40,8 @@ app.post('/test', async (req, res) => {
       return {['builtIns.' + elm] : {'$exists': true}};
     });
   };
-  const ret = await TestMetadata.find(query);
-  console.log(Date.now() - n);
+  res.send(await TestMetadata.find(query));
   process.stdout.write(JSON.stringify(query, null, 2));
-  res.send(ret);
   console.log(Date.now() - n);
 });
 
