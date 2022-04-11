@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+mongoose.set('debug', true);
 mongoose.connect('mongodb://127.0.0.1:27017/metadata');
 const TestMetadata = require('./TestMetadata');
 const axios = require('axios');
@@ -16,38 +17,60 @@ const getDistinct = async (key) => {
     .then((res) => { return res; })
 };
 
+const inv = ['./test262-main/test/built-ins/Object/prototype/hasOwnProperty/not-a-constructor.js',
+    './test262-main/test/built-ins/Object/prototype/hasOwnProperty/length.js',
+    './test262-main/test/built-ins/Object/prototype/hasOwnProperty/topropertykey_before_toobject.js',
+  ]
+
+  const vali = ['./test262-main/test/built-ins/Array/S15.4.3_A1.1_T3.js']
+
 app.get('/', async (req, res) => {
-  res.send(await TestMetadata.find({}));
+  // res.send(await TestMetadata.find({ path: './test262-main/test/built-ins/Object/prototype/hasOwnProperty/not-a-constructor.js'}));
+  // res.send(await TestMetadata.find({}));
+  const cursor = TestMetadata.find({path: {'$in': inv}}).cursor();
+  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+    console.log(doc.get('path'));
+  }
+  res.send('end');
 });
-app.get('/size', async (req, res) => {
-  res.send(await TestMetadata.find({'version': 5})) ;
+
+app.get('/allTests', async (req, res) => {
+  res.send(await TestMetadata.find({path: {'$nin': inv}})) ;
 });
 
 // query the database to get the tests
 app.post('/test', async (req, res) => {
   const n = Date.now();
-  const query = {};
-  if (req.body.builtIn.length !== 0) {
-    query['built-ins'] = {'$in': req.body.builtIn};
-  };
+  let query = {};
   
   if (req.body.version) {
-    query.version = Number(req.body.version);
+    query.version = req.body.version;
   };
-  //  db.metadata.find({'builtIns.Object': {$exists: true}})
-  if (req.body.builtIn2.length !== 0) {
-    query['$or'] = req.body.builtIn2.map((elm) => {
-      return {['builtIns.' + elm] : {'$exists': true}};
-    });
+  
+  if (req.body.builtIn.length !== 0 || req.body.builtIn2.length !== 0) {
+    const arr = [];
+    if (req.body.builtIn.length !== 0) {
+      arr.push({'built-ins': {'$in': req.body.builtIn}});
+    };
+    
+    if (req.body.builtIn2.length !== 0) {
+      arr.push({'$or': req.body.builtIn2.map((elm) => {
+        return {['builtIns.' + elm] : {'$exists': true}};
+      })});
+    };
+    if (req.body.builtInGrouping) {
+      query['$and'] = arr;
+    } else {
+      query['$or'] = arr;
+    } 
   };
+  
   res.send(await TestMetadata.find(query));
-  process.stdout.write(JSON.stringify(query, null, 2));
   console.log(Date.now() - n);
 });
 
 app.get('/getBuiltIns', async (req, res) => {
   res.send(await getDistinct('built-ins'));
-  console.log('/getBuiltIns');
 });
 
 app.get('/getBuiltIns2', async (req, res) => {
@@ -63,12 +86,10 @@ app.get('/getBuiltIns2', async (req, res) => {
   
   const comp = [...new Set(builtInsDiff)]; //remove duplicate
   res.send(comp.sort());
-  console.log('/getBuiltIns2');
 });
 
 app.get('/getVersions', async (req, res) => {
   res.send(await getDistinct('version'));
-  console.log('/getVersions');
 });
 
 app.get('/testAPI', async (req, res) => {
