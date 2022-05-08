@@ -25,9 +25,10 @@ const inv = ['./test262-main/test/built-ins/Object/prototype/hasOwnProperty/not-
   const vali = ['./test262-main/test/built-ins/Array/S15.4.3_A1.1_T3.js']
 
 app.get('/', async (req, res) => {
+  
   // res.send(await TestMetadata.find({ path: './test262-main/test/built-ins/Object/prototype/hasOwnProperty/not-a-constructor.js'}));
   // res.send(await TestMetadata.find({}));
-  const cursor = TestMetadata.find({path: {'$in': inv}}).cursor();
+  const cursor = TestMetadata.find({}).cursor();
   for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
     console.log(doc.get('path'));
   }
@@ -35,7 +36,7 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/allTests', async (req, res) => {
-  res.send(await TestMetadata.find({path: {'$nin': inv}})) ;
+  res.send(await TestMetadata.find({})) ;
 });
 
 // query the database to get the tests
