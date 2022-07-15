@@ -3,6 +3,7 @@ import axios from "axios";
 import MultipleSelect from "./MultipleSelect";
 import SingleSelect from "./SingleSelect";
 import DisplayTests from "./DisplayTests";
+import DisplayStatistics from "./DisplayStatistics";
 
 import Button from "@mui/material/Button"
 import CssBaseline from '@mui/material/CssBaseline';
@@ -11,12 +12,9 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import Pagination from "@mui/material/Pagination";
 
-const itemsPerPage = 10;
 const TestSearch = ({ url }) => {
   const [version, setVersion] = useState('');
-  const [page, setPage] = useState(1);
   const [fetchedTests, setFetchedTests] = useState(false);
   const [presentType, setPresentType] = useState('Path');
   const [builtInGrouping, setBuiltInGrouping] = useState(true);
@@ -52,7 +50,7 @@ const TestSearch = ({ url }) => {
         setAllTests(resp.data);
         setFetchedTests(true);
         console.log('inicial tests fetch: ' + String(Date.now() - sw));
-      
+
       }).catch(e => console.log(e));
 
 
@@ -116,7 +114,7 @@ const TestSearch = ({ url }) => {
     <>
       <CssBaseline enableColorScheme />
       <Container align="center">
-        <Typography variant='h2' component='h1'>Test 262 Database</Typography>
+        <Typography variant='h2' component='h1'>MetaData262Viz</Typography>
         <Box>
           <Box>
             <MultipleSelect
@@ -150,7 +148,7 @@ const TestSearch = ({ url }) => {
               setSelection={setVersion}
             />
             <Button sx={{ m: 2 }} size="large" variant="contained" onClick={getSearchResultsBackend}>BackEnd Search</Button>
-            <Button 
+            <Button
               sx={{ m: 2 }}
               size="large"
               variant="contained"
@@ -170,17 +168,17 @@ const TestSearch = ({ url }) => {
           >
             <ToggleButton value='Path' aria-label='Path'>Path</ToggleButton>
             <ToggleButton value='JSON' aria-label='JSON'>JSON</ToggleButton>
+            <ToggleButton value='STATS' aria-label='STATS'>STATS</ToggleButton>
           </ToggleButtonGroup>
           <Box >
             <Typography variant='h6' component='h3'>time to search: {stopWatch}</Typography>
             <Typography variant='h6' component='h3'>Number of tests: {searchResults.length}</Typography>
-            <DisplayTests tests={searchResults.slice(itemsPerPage * (page-1), itemsPerPage * page)} presentType={presentType} />
-            <Pagination 
-              page={page}
-              onChange={(e, val) => setPage(val)}
-              count={Math.ceil(searchResults.length / itemsPerPage)}
-              sx={{m: 2, justifyContent: 'center', display: 'flex'}}
-            />
+            {presentType !== 'STATS' && <Box>
+              <DisplayTests tests={searchResults} presentType={presentType} />
+            </Box>}
+            {presentType === 'STATS' && <Box>
+              <DisplayStatistics tests={searchResults} />
+            </Box>}
           </Box>
         </Box>}
       </Container>
