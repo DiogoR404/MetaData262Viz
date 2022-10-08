@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const testMetadataSchema = new mongoose.Schema({
-    'built-ins': String,
+    'pathSplit': [String],
     'version': Number,
     'builtIns': Object,
     'path': String

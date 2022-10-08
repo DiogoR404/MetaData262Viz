@@ -20,8 +20,8 @@ const getDistinct = async (key) => {
 };
 
 
-// fuction for testing
-app.get('/', async (req, res) => {
+// function for testing
+app.get('/', async (_, res) => {
   const cursor = TestMetadata.find({}).cursor();
   for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
     console.log(doc.get('path'));
@@ -31,7 +31,7 @@ app.get('/', async (req, res) => {
 
 
 // get the whole database
-app.get('/allTests', async (req, res) => {
+app.get('/allTests', async (_, res) => {
   res.send(await TestMetadata.find({})) ;
 });
 
@@ -68,14 +68,17 @@ app.post('/test', async (req, res) => {
 });
 
 
-// get all built-ins (subforder of built-in directory)
-app.get('/getBuiltIns', async (req, res) => {
-  res.send(await getDistinct('built-ins'));
+// get all built-ins (subfolder of built-in directory)
+app.get('/getBuiltIns', async (_, res) => {
+  const paths = await TestMetadata.find({pathSplit:'built-ins'},{pathSplit:1, _id:0})
+  let distinct = new Set();
+  paths.forEach(elm => {distinct.add(elm.pathSplit[1])}) 
+  res.send([...distinct]);
 });
 
 
 // get all builtIns
-app.get('/getBuiltIns2', async (req, res) => {
+app.get('/getBuiltIns2', async (_, res) => {
   const builtIns = await getDistinct('builtIns');
   const builtInsDiff = [];
 
@@ -92,10 +95,17 @@ app.get('/getBuiltIns2', async (req, res) => {
 
 
 // get all versions
-app.get('/getVersions', async (req, res) => {
+app.get('/getVersions', async (_, res) => {
   res.send(await getDistinct('version'));
 });
 
+app.get('/countTestsPerVersion', async(_, res) => {
+  const query =await TestMetadata.find({pathSplit:'built-ins'},{pathSplit:{$slice:[1,1]},version:1,_id:0});
+
+  table = [['subfolder'] + (await getDistinct('version'))]
+  res.send(table)
+
+});
 
 // start server
 app.listen(port, () => {
