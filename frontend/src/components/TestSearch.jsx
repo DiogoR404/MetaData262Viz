@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import pako from "pako";
 import MultipleSelect from "./MultipleSelect";
 import SingleSelect from "./SingleSelect";
 import DisplayTests from "./DisplayTests";
@@ -31,28 +32,34 @@ const TestSearch = ({ url }) => {
   // fetch info for query from database
   useEffect(() => {
     const sw = Date.now();
-    const fetches = [
-      axios.get(url + 'getBuiltIns'),
-      axios.get(url + 'getVersions'),
-      axios.get(url + 'getBuiltIns2'),
-    ];
-    axios.all(fetches)
-      .then(axios.spread((...resp) => {
-        setListBuiltInsBelong(resp[0].data);
-        setListVersions(resp[1].data);
-        setListBuiltInsContained(resp[2].data);
-        console.log('inicial search fetches: ' + String(Date.now() - sw));
-      }))
-      .catch(e => console.log(e));
 
-    axios.get(url + 'allTests/')
+    axios.get(url + 'getZip/', { responseType: 'arraybuffer' })
       .then((resp) => {
-        setAllTests(resp.data);
-        setFetchedTests(true);
         console.log('inicial tests fetch: ' + String(Date.now() - sw));
+        const inflated = pako.inflate(resp.data, {to: 'string'});
+        const tests = JSON.parse(inflated.slice(inflated.indexOf('['), inflated.lastIndexOf(']') +1));
+        setAllTests(tests);
+        const versions = new Set();
+        const builtIns = new Set();
+        const folders = new Set();
+        tests.forEach(test => {
+          if (test.version) versions.add(test.version);
+          if (test.hasOwnProperty('built-ins')) Object.keys(test['built-ins']).forEach(builtIn => builtIns.add(builtIn));
+          folders.add(test.pathSplit[1]);
+        });
+        setListVersions([...versions].sort((a,b) => {return a-b;}));
+        setListBuiltInsBelong([...folders].sort());
+        setListBuiltInsContained([...builtIns].sort());
+
+
+        setFetchedTests(true);
+        console.log('final tests fetch: ' + String(Date.now() - sw));
 
       }).catch(e => console.log(e));
-
+      
+      setListBuiltInsBelong([])
+      setListBuiltInsContained([])
+      setListVersions([])
 
   }, [url]);
 
@@ -84,7 +91,7 @@ const TestSearch = ({ url }) => {
 
       let ret = false;
       selectedBuiltInContained.forEach((el) => {
-        if (test['builtIns'] && Object.keys(test['builtIns']).includes(el)) {
+        if (test['built-ins'] && Object.keys(test['built-ins']).includes(el)) {
           ret = true;
         }
       });
@@ -92,7 +99,7 @@ const TestSearch = ({ url }) => {
     };
 
     const filterBuiltInBelong = (test) => {
-      return selectedBuiltInBelong.length === 0 || selectedBuiltInBelong.includes(test['built-ins'])
+      return selectedBuiltInBelong.length === 0 || selectedBuiltInBelong.includes(test['pathSplit'][1])
     }
 
     const filterBuiltIn = (test) => {
@@ -103,7 +110,7 @@ const TestSearch = ({ url }) => {
 
 
     const result = allTests
-      .filter(test => { return version === '' || Number(test.version) === version })
+      .filter(test => { return version === '' || parseInt(test.version) === version })
       .filter(filterBuiltIn);
     setSearchResults(result);
     setHasFirstSearch(true);
