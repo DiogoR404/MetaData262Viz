@@ -9,6 +9,8 @@ app.use(cors())
 app.use(express.json());
 
 const metadataCompressed = fs.readFileSync('metadata.tar.gz');
+// const meta = JSON.parse(fs.readFileSync('metadata_version.json'));
+// console.log(meta.filter(test => {return test.pathSplit.length < 2;}).length)
 
 // get the zip file with all the metadata
 app.get('/getZip', async (_, res) => {

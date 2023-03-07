@@ -47,6 +47,7 @@ const TestSearch = ({ url }) => {
           if (test.hasOwnProperty('built-ins')) Object.keys(test['built-ins']).forEach(builtIn => builtIns.add(builtIn));
           folders.add(test.pathSplit[1]);
         });
+        versions.add('undefined');
         setListVersions([...versions].sort((a,b) => {return a-b;}));
         setListBuiltInsBelong([...folders].sort());
         setListBuiltInsContained([...builtIns].sort());
@@ -63,24 +64,6 @@ const TestSearch = ({ url }) => {
 
   }, [url]);
 
-  const getSearchResultsBackend = () => {
-    const sw = Date.now();
-    setSearchResults([]);
-    const query = {
-      version: version,
-      builtIn: selectedBuiltInBelong,
-      builtIn2: selectedBuiltInContained,
-      builtInGrouping: builtInGrouping
-    };
-
-    axios.post(url + 'test/', query)
-      .then((result) => {
-        setSearchResults(result.data);
-        setHasFirstSearch(true);
-        setStopWatch(Date.now() - sw);
-      })
-      .catch((e) => console.log(e))
-  }
 
   const getSearchResultsFrontend = () => {
     const sw = Date.now();
@@ -110,7 +93,7 @@ const TestSearch = ({ url }) => {
 
 
     const result = allTests
-      .filter(test => { return version === '' || parseInt(test.version) === version })
+      .filter(test => { return version === '' || parseInt(test.version) === version || (test.version === undefined && version === 'undefined') })
       .filter(filterBuiltIn);
     setSearchResults(result);
     setHasFirstSearch(true);
@@ -154,7 +137,6 @@ const TestSearch = ({ url }) => {
               selection={version}
               setSelection={setVersion}
             />
-            <Button sx={{ m: 2 }} size="large" variant="contained" onClick={getSearchResultsBackend}>BackEnd Search</Button>
             <Button
               sx={{ m: 2 }}
               size="large"
@@ -184,7 +166,7 @@ const TestSearch = ({ url }) => {
               <DisplayTests tests={searchResults} presentType={presentType} />
             </Box>}
             {presentType === 'STATS' && <Box>
-              <DisplayStatistics tests={searchResults} />
+              <DisplayStatistics tests={searchResults} versions={listVersions} />
             </Box>}
           </Box>
         </Box>}

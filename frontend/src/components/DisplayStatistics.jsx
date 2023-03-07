@@ -1,82 +1,54 @@
 import { VictoryBar, VictoryChart, VictoryPie, VictoryStack, VictoryTheme, VictoryAxis, VictoryBoxPlot } from 'victory';
 import { Grid } from '@mui/material';
 
-const DisplayTests = ({ tests }) => {
-
-  // obj is either built-ins, language or intl402
-  const addSubPath = (obj, subPathType, subPath, version, lines) => {
-    if (!obj[subPath]) {
-      obj[subPath] = { 'versions': initVersions() };
-      obj[subPath].total = 0;
-      obj[subPath].type = subPathType;
-      obj[subPath].lines = [];
-    }
-
-    obj[subPath].versions[version]++;
-    obj[subPath].total++;
-    obj[subPath].lines.push(lines);
-  }
-
-  const initVersions = () => {
-    return {
-      5: 0,
-      6: 0,
-      8: 0,
-      9: 0,
-      10: 0,
-      11: 0,
-      "undefined": 0
-    };
-  }
-
-  const mapVersions = (versions) => {
-    let list = [];
-    Object.keys(versions).forEach(v => { list.push({ 'version': v, 'number': versions[v] }) });
-    return list.filter(elm => { return elm.number !== 0 });
-  }
+const DisplayTests = ({ tests, versions }) => {
 
   const statPie = () => {
-    let versions = initVersions();
-    let subPath = {};
-
-    tests.forEach(elm => {
-      versions[elm.version]++;
-
-      // add subpath
-      if (elm['built-ins']) {
-        addSubPath(subPath, 'built-ins', elm['built-ins'], elm.version, elm.lines);
-      }
-      if (elm['languages']) {
-        addSubPath(subPath, 'languages', elm['languages'], elm.version, elm.lines);
-      }
-      if (elm['intl402']) {
-        addSubPath(subPath, 'intl402', elm['intl402'], elm.version, elm.lines);
-      }
+    const sw = Date.now();
+    let versionsSumTests2 = [];
+    const versionSumIndex = {};
+    versions.forEach((version, i) => {
+      versionsSumTests2.push({'version': version.toString(), 'number': 0});
+      versionSumIndex[version] = i;
     });
 
-    let stackList = [[[], [], [], [], [], [], []], []];
+    let subPath = {};
+    // obj is either built-ins or language
+    const addSubPath = (result, subPath, version, lines) => {
+      if (!result[subPath]) {
+        result[subPath] = { 'versions': {} };
+        versions.forEach(v => result[subPath]['versions'][v] = 0);
+        result[subPath].total = 0;
+        result[subPath].lines = [];
+      }
+
+      result[subPath].versions[version]++;
+      result[subPath].total++;
+      result[subPath].lines.push(lines);
+    }
+
+    tests.forEach(test => {
+      versionsSumTests2[versionSumIndex[test.version]]['number']++;
+      addSubPath(subPath, test.pathSplit[1], test.version, test.lines);
+    });
+
+    let stackList = [[], []];
     let linesList = [];
     Object.keys(subPath).forEach(elm => {
-      stackList[0][0].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[5] / subPath[elm].total) });
-      stackList[0][1].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[6] / subPath[elm].total) });
-      stackList[0][2].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[8] / subPath[elm].total) });
-      stackList[0][3].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[9] / subPath[elm].total) });
-      stackList[0][4].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[10] / subPath[elm].total) });
-
-
-      stackList[0][5].push({ 'x': elm, 'y': parseInt(100 * subPath[elm].versions[11] / subPath[elm].total) });
-      stackList[0][6].push({ 'x': elm, 'y': parseInt(100 * subPath[elm].versions['undefined'] / subPath[elm].total) });
-
+      versions.forEach((v,i) => {
+        stackList[0].push([])
+        stackList[0][i].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[v] / subPath[elm].total)});
+      })
       stackList[1].push(elm);
       linesList.push({ 'x': elm, 'y': subPath[elm].lines });
     });
 
+    console.log('time calculate statistics:', Date.now() - sw)
     return [
-      mapVersions(versions)
-      , stackList
-      , linesList
+      versionsSumTests2,
+      stackList,
+      linesList
     ];
-    // stackList = [{x:"subpath", y:0}]
   }
 
   const statistics = statPie();
@@ -95,7 +67,7 @@ const DisplayTests = ({ tests }) => {
         <Grid item xs={6}>
           <VictoryChart
             theme={VictoryTheme.material}
-            domainPadding={10}
+            domainPadding={20}
           >
             <VictoryAxis
               style={{
@@ -124,7 +96,7 @@ const DisplayTests = ({ tests }) => {
           </VictoryChart>
         </Grid>
         <Grid item xs={6}>
-          <VictoryChart domainPadding={12}>
+          <VictoryChart domainPadding={20}>
             <VictoryBoxPlot
               horizontal
               boxWidth={20}
@@ -134,7 +106,6 @@ const DisplayTests = ({ tests }) => {
           </VictoryChart>
         </Grid>
       </Grid>
-
     </>
   );
 }
