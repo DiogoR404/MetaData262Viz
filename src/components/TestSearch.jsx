@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import pako from "pako";
 import MultipleSelect from "./MultipleSelect";
 import SingleSelect from "./SingleSelect";
 import DisplayTests from "./DisplayTests";
@@ -14,7 +12,7 @@ import Box from '@mui/material/Box';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 
-const TestSearch = ({ url }) => {
+const TestSearch = ({ metadata }) => {
   const [version, setVersion] = useState('');
   const [fetchedTests, setFetchedTests] = useState(false);
   const [presentType, setPresentType] = useState('Path');
@@ -33,36 +31,33 @@ const TestSearch = ({ url }) => {
   useEffect(() => {
     const sw = Date.now();
 
-    axios.get(url + 'getZip/', { responseType: 'arraybuffer' })
-      .then((resp) => {
-        console.log('inicial tests fetch: ' + String(Date.now() - sw));
-        const inflated = pako.inflate(resp.data, {to: 'string'});
-        const tests = JSON.parse(inflated.slice(inflated.indexOf('['), inflated.lastIndexOf(']') +1));
-        setAllTests(tests);
-        const versions = new Set();
-        const builtIns = new Set();
-        const folders = new Set();
-        tests.forEach(test => {
-          if (test.version) versions.add(test.version);
-          if (test.hasOwnProperty('built-ins')) Object.keys(test['built-ins']).forEach(builtIn => builtIns.add(builtIn));
-          folders.add(test.pathSplit[1]);
-        });
-        versions.add('undefined');
-        setListVersions([...versions].sort((a,b) => {return a-b;}));
-        setListBuiltInsBelong([...folders].sort());
-        setListBuiltInsContained([...builtIns].sort());
+      console.log('inicial tests fetch: ' + String(Date.now() - sw));
+
+      //const tests = JSON.parse(inflated.slice(inflated.indexOf('['), inflated.lastIndexOf(']') +1));
+      let tests = metadata 
+      setAllTests(tests);
+      const versions = new Set();
+      const builtIns = new Set();
+      const folders = new Set();
+      tests.forEach(test => {
+        if (test.version) versions.add(test.version);
+        if (test.hasOwnProperty('built-ins')) Object.keys(test['built-ins']).forEach(builtIn => builtIns.add(builtIn));
+        folders.add(test.pathSplit[1]);
+      });
+      versions.add('undefined');
+      setListVersions([...versions].sort((a,b) => {return a-b;}));
+      setListBuiltInsBelong([...folders].sort());
+      setListBuiltInsContained([...builtIns].sort());
 
 
-        setFetchedTests(true);
-        console.log('final tests fetch: ' + String(Date.now() - sw));
-
-      }).catch(e => console.log(e));
+      setFetchedTests(true);
+      console.log('final tests fetch: ' + String(Date.now() - sw));
       
       setListBuiltInsBelong([])
       setListBuiltInsContained([])
       setListVersions([])
 
-  }, [url]);
+  }, [metadata]);
 
 
   const getSearchResultsFrontend = () => {
@@ -103,12 +98,12 @@ const TestSearch = ({ url }) => {
   return (
     <>
       <CssBaseline enableColorScheme />
-      <Container align="center">
-        <Typography variant='h2' component='h1'>MetaData262Viz</Typography>
+      <Container align="center" disableGutters maxWidth="lg">
+        <Typography variant='h2' component='h1'>MetaData262</Typography>
         <Box>
           <Box>
             <MultipleSelect
-              title='BuiltIn Belongs'
+              title='BuiltIn Folder'
               list={listBuiltInsBelong}
               selection={selectedBuiltInBelong}
               setSelection={setSelectedBuiltInBelong}
@@ -124,7 +119,7 @@ const TestSearch = ({ url }) => {
               <ToggleButton value={false} aria-label='Or'>Or</ToggleButton>
             </ToggleButtonGroup>
             <MultipleSelect
-              title='BuiltIn Contained'
+              title='BuiltIn Used'
               list={listBuiltInsContained}
               selection={selectedBuiltInContained}
               setSelection={setSelectedBuiltInContained}
@@ -149,26 +144,27 @@ const TestSearch = ({ url }) => {
 
         {hasFirstSearch && <Box textAlign='left' sx={{ mt: 2 }}>
           <ToggleButtonGroup
-            sx={{ ml: 2 }}
+            sx={{ mb: 4 }}
             exclusive
             value={presentType}
             onChange={(_e, type) => {if(type !== null) setPresentType(type);}}
-            arial-label='Presentation type'
           >
             <ToggleButton value='Path' aria-label='Path'>Path</ToggleButton>
             <ToggleButton value='JSON' aria-label='JSON'>JSON</ToggleButton>
             <ToggleButton value='STATS' aria-label='STATS'>STATS</ToggleButton>
           </ToggleButtonGroup>
-          <Box >
-            <Typography variant='h6' component='h3'>time to search: {stopWatch}</Typography>
-            <Typography variant='h6' component='h3'>Number of tests: {searchResults.length}</Typography>
+          
+          <Box >        
             {presentType !== 'STATS' && <Box>
+              <Typography variant='h6' component='h3' gutterBottom>Number of tests: {searchResults.length}</Typography>
               <DisplayTests tests={searchResults} presentType={presentType} />
             </Box>}
             {presentType === 'STATS' && <Box>
+            <Typography variant='h6' component='h3' textAlign="center" gutterBottom>Number of tests: {searchResults.length}</Typography>
               <DisplayStatistics tests={searchResults} versions={listVersions} />
             </Box>}
           </Box>
+        
         </Box>}
       </Container>
     </>

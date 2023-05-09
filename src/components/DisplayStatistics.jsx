@@ -1,4 +1,4 @@
-import { VictoryBar, VictoryChart, VictoryPie, VictoryStack, VictoryTheme, VictoryAxis, VictoryBoxPlot } from 'victory';
+import { VictoryBar, VictoryChart, VictoryPie, VictoryStack, VictoryTheme, VictoryAxis, VictoryLabel } from 'victory';
 import { Grid } from '@mui/material';
 
 const DisplayTests = ({ tests, versions }) => {
@@ -7,8 +7,9 @@ const DisplayTests = ({ tests, versions }) => {
     const sw = Date.now();
     let versionsSumTests2 = [];
     const versionSumIndex = {};
+
     versions.forEach((version, i) => {
-      versionsSumTests2.push({'version': version.toString(), 'number': 0});
+      versionsSumTests2.push({'version': version.toString() === 'undefined'? 'N/A': version.toString(), 'number': 0});
       versionSumIndex[version] = i;
     });
 
@@ -37,11 +38,15 @@ const DisplayTests = ({ tests, versions }) => {
     Object.keys(subPath).forEach(elm => {
       versions.forEach((v,i) => {
         stackList[0].push([])
-        stackList[0][i].push({ 'x': elm, 'y': Math.round(100 * subPath[elm].versions[v] / subPath[elm].total)});
+        stackList[0][i].push({ 'x': elm, 'y': 100 * subPath[elm].versions[v] / subPath[elm].total});
       })
       stackList[1].push(elm);
       linesList.push({ 'x': elm, 'y': subPath[elm].lines });
     });
+
+    versionsSumTests2 = versionsSumTests2.filter(function(item) {
+      return item['number'] !== 0
+    })
 
     console.log('time calculate statistics:', Date.now() - sw)
     return [
@@ -52,31 +57,50 @@ const DisplayTests = ({ tests, versions }) => {
   }
 
   const statistics = statPie();
+  console.log(statistics[0]);
+
+  Object.keys(statistics[0]).forEach(k => {
+    let value = statistics[0][k]['version']
+    if (value != 'N/A'){
+      statistics[0][k]['version'] = 'V' + value
+    }
+  })
+
 
   return (
     <>
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
-          <VictoryPie
+        <Grid item xs={5.5}>
+        <VictoryPie
             theme={VictoryTheme.material}
             data={statistics[0]}
             x="version"
             y="number"
+            padAngle={5}
+            cornerRadius={5}
           />
         </Grid>
         <Grid item xs={6}>
           <VictoryChart
-            theme={VictoryTheme.material}
-            domainPadding={20}
+              theme={VictoryTheme.material}
           >
             <VictoryAxis
+              tickLabelComponent={(
+                <VictoryLabel
+                    
+                    textAnchor="start"
+                    x={0}
+              />
+              )}
               style={{
-                tickLabels: { fontSize: 8, padding: 0 }
+              tickLabels: {
+                fontSize: 8,
+              }
               }}
               // tickValues specifies both the number of ticks and where
               // they are placed on the axis
-              tickValues={[...Array(statistics[1][1].length).keys()]}
-              tickFormat={statistics[1][1]}
+              // tickValues={[...Array(statistics[1][1].length).keys()]}
+              // tickFormat={statistics[1][1]}
             />
             <VictoryAxis
               style={{
@@ -95,7 +119,7 @@ const DisplayTests = ({ tests, versions }) => {
             </VictoryStack>
           </VictoryChart>
         </Grid>
-        <Grid item xs={6}>
+        {/* <Grid item xs={6}>
           <VictoryChart domainPadding={20}>
             <VictoryBoxPlot
               horizontal
@@ -104,7 +128,7 @@ const DisplayTests = ({ tests, versions }) => {
               data={statistics[2]}
             />
           </VictoryChart>
-        </Grid>
+        </Grid> */}
       </Grid>
     </>
   );
