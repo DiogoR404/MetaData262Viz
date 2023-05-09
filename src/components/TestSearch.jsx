@@ -12,7 +12,9 @@ import Box from '@mui/material/Box';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 
-const TestSearch = ({ metadata }) => {
+const TestSearch = () => {
+
+  const metadata = require('../data/metadata.json');
   const [version, setVersion] = useState('');
   const [fetchedTests, setFetchedTests] = useState(false);
   const [presentType, setPresentType] = useState('Path');
@@ -25,43 +27,30 @@ const TestSearch = ({ metadata }) => {
   const [listBuiltInsContained, setListBuiltInsContained] = useState([]);
   const [listVersions, setListVersions] = useState([]);
   const [hasFirstSearch, setHasFirstSearch] = useState(false);
-  const [stopWatch, setStopWatch] = useState(0);
 
   // fetch info for query from database
   useEffect(() => {
-    const sw = Date.now();
-
-      console.log('inicial tests fetch: ' + String(Date.now() - sw));
-
-      //const tests = JSON.parse(inflated.slice(inflated.indexOf('['), inflated.lastIndexOf(']') +1));
-      let tests = metadata 
-      setAllTests(tests);
-      const versions = new Set();
-      const builtIns = new Set();
-      const folders = new Set();
-      tests.forEach(test => {
-        if (test.version) versions.add(test.version);
-        if (test.hasOwnProperty('built-ins')) Object.keys(test['built-ins']).forEach(builtIn => builtIns.add(builtIn));
-        folders.add(test.pathSplit[1]);
-      });
-      versions.add('undefined');
-      setListVersions([...versions].sort((a,b) => {return a-b;}));
-      setListBuiltInsBelong([...folders].sort());
-      setListBuiltInsContained([...builtIns].sort());
-
-
-      setFetchedTests(true);
-      console.log('final tests fetch: ' + String(Date.now() - sw));
-      
-      setListBuiltInsBelong([])
-      setListBuiltInsContained([])
-      setListVersions([])
+ 
+    let tests = metadata 
+    setAllTests(tests);
+    const versions = new Set();
+    const builtIns = new Set();
+    const folders = new Set();
+    tests.forEach(test => {
+      if (test.version) versions.add(test.version);
+      if (test.hasOwnProperty('built-ins')) Object.keys(test['built-ins']).forEach(builtIn => builtIns.add(builtIn));
+      folders.add(test.pathSplit[1]);
+    });
+    versions.add('undefined');
+    setListVersions([...versions].sort((a,b) => {return a-b;}));
+    setListBuiltInsBelong([...folders].sort());
+    setListBuiltInsContained([...builtIns].sort());
+    setFetchedTests(true);
 
   }, [metadata]);
 
 
   const getSearchResultsFrontend = () => {
-    const sw = Date.now();
     const oneBuiltInEmpty = selectedBuiltInBelong.length === 0 || selectedBuiltInContained.length === 0;
 
     const filterBuiltInContained = (test) => {
@@ -86,13 +75,11 @@ const TestSearch = ({ metadata }) => {
         : filterBuiltInBelong(test) || filterBuiltInContained(test);
     }
 
-
     const result = allTests
       .filter(test => { return version === '' || parseInt(test.version) === version || (test.version === undefined && version === 'undefined') })
       .filter(filterBuiltIn);
     setSearchResults(result);
     setHasFirstSearch(true);
-    setStopWatch(Date.now() - sw);
   }
 
   return (

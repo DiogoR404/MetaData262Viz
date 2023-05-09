@@ -1,12 +1,12 @@
 import './App.css';
 import TestSearch from './components/TestSearch'
-import data from './data/metadata.json';
 
 function App() {
 
+  //const data = require('./data/metadata.json');
   return (
     <>
-      <TestSearch metadata={data}/>
+      <TestSearch/>
     </>
   );
 }
